@@ -1,12 +1,15 @@
 TARGET=info
+WORKDIR=/var/html/www/app
+PROJECT=craftcms/craft
 
 .PHONY: composer
 composer:
 	docker run \
+		-u 1000:1000 \
 		-v ${PWD}:/var/html/www \
 		-v ${PWD}/.data:/tmp \
 		-e COMPOSER_CACHE_DIR=/tmp \
-		-w /var/html/www/app \
+		-w ${WORKDIR} \
 		composer:latest \
 		${TARGET}
 
@@ -24,15 +27,17 @@ update:
 
 .PHONY: clean
 clean:
-	sudo rm -rf app/
+	sudo rm -rf app/ etc/db/data/
 
 .PHONY: create
 create:
-	make composer -e TARGET="create-project craftcms/craft ./"
+	make composer -e WORKDIR="/var/html/www" -e TARGET="create-project ${PROJECT} ./app"
+	sudo chmod -R 777 app/storage
 
 .PHOMY: setup
 setup:
 	make clean
 	make create
+	docker-compose down
 	docker-compose up -d
-	docker-compose exec craft php craft setup
+	docker-compose exec php /usr/local/bin/php craft setup
