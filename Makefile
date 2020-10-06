@@ -29,15 +29,15 @@ update:
 clean:
 	sudo rm -rf app/ etc/db/data/
 
-.PHONY: create
-create:
+.PHONY: create-project
+create-project:
 	make composer -e WORKDIR="/var/html/www" -e TARGET="create-project ${PROJECT} ./app"
 	sudo chmod -R 777 app/storage
 
 .PHOMY: setup
 setup:
 	make clean
-	make create
+	make create-project
 	docker-compose down
 	docker-compose up -d
 	docker-compose exec php /usr/local/bin/php craft setup
